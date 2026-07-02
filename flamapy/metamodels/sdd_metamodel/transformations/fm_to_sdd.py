@@ -1,15 +1,14 @@
 from pysdd.sdd import SddManager, Vtree
 
 from flamapy.core.transformations import ModelToModel
-from flamapy.metamodels.fm_metamodel.models import FeatureModel
-from flamapy.metamodels.pysat_metamodel.transformations import FmToPysat
+from flamapy.metamodels.fm_metamodel.models import FeatureModel, ClauseSet
 from flamapy.metamodels.sdd_metamodel.models import SDDModel
 
 
 class FmToSDD(ModelToModel):
     """Transform a feature model into an SDD by compiling its CNF with PySDD.
 
-    The CNF is produced by reusing the SAT metamodel's ``FmToPysat`` transformation, then
+    The CNF is produced by the feature-model ``ClauseSet`` (no SAT-solver dependency), then
     conjoined clause by clause into an SDD over a balanced vtree.
     """
 
@@ -27,14 +26,8 @@ class FmToSDD(ModelToModel):
         self.destination_model = SDDModel()
 
     def transform(self) -> SDDModel:
-        # Only pass cnf_method for a non-default encoding, so the plugin also works against
-        # releases of flamapy-sat that predate the Tseytin cnf_method option.
-        if self.cnf_method == 'distributive':
-            sat_model = FmToPysat(self.source_model).transform()
-        else:
-            sat_model = FmToPysat(self.source_model, cnf_method=self.cnf_method).transform()
-
-        clauses = [list(clause) for clause in sat_model.get_all_clauses().clauses]
+        clause_set = ClauseSet.from_feature_model(self.source_model, cnf_method=self.cnf_method)
+        clauses = [list(clause) for clause in clause_set.clauses]
         var_count = max((abs(literal) for clause in clauses for literal in clause), default=1)
 
         vtree = Vtree(var_count=var_count, vtree_type='balanced')
@@ -49,7 +42,7 @@ class FmToSDD(ModelToModel):
         model = self.destination_model
         model.manager = manager
         model.root = root
-        model.variables = dict(sat_model.variables)
-        model.features = dict(sat_model.features)
+        model.variables = dict(clause_set.variables)
+        model.features = dict(clause_set.features)
         model.original_model = self.source_model
         return model
