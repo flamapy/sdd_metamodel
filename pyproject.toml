@@ -25,6 +25,9 @@ dev = [
     "coverage",
 ]
 
+[project.entry-points."flamapy.plugins"]
+sdd = "flamapy.metamodels.sdd_metamodel"
+
 [project.urls]
 Homepage = "https://github.com/flamapy/sdd_metamodel"
 
