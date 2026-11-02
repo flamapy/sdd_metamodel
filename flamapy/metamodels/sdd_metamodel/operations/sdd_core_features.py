@@ -9,7 +9,8 @@ class SDDCoreFeatures(CoreFeatures):
     """Core features: present in every valid configuration.
 
     A feature is core iff no model selects it as false, i.e. conjoining its negative literal
-    with the compiled SDD yields the false node.
+    with the compiled SDD yields the false node. A void model has no core features (the
+    convention of the SAT and BDD plugins), not vacuously all of them.
     """
 
     def __init__(self) -> None:
@@ -25,6 +26,9 @@ class SDDCoreFeatures(CoreFeatures):
         sdd_model = cast(SDDModel, model)
         manager = sdd_model.manager
         core = []
+        if sdd_model.root.is_false():  # void model
+            self._result = core
+            return self
         for variable, name in sdd_model.features.items():
             if (sdd_model.root & manager.literal(-variable)).is_false():
                 core.append(name)

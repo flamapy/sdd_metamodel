@@ -106,3 +106,41 @@ def test_dead_features_match_sat():
     expected = _dead_features(fm)
     sdd = set(SDDDeadFeatures().execute(FmToSDD(fm).transform()).get_result())
     assert sdd == expected  # no dead features in this model
+
+
+def test_void_model_has_no_core_features():
+    fm = _fm(_UNSAT_UVL)
+    model = FmToSDD(fm).transform()
+    assert SDDCoreFeatures().execute(model).get_result() == []
+    assert set(SDDCoreFeatures().execute(model).get_result()) == _core_features(fm)
+    assert set(SDDDeadFeatures().execute(model).get_result()) == _dead_features(fm)
+
+
+_TSEYTIN_UVL = """features
+    Root {abstract}
+        optional
+            A
+            B
+            C
+            D
+            E
+            F
+constraints
+    (A & B & C) | (D & E & F) | (B & E & F)
+"""
+
+
+def test_cnf_methods_agree():
+    """Tseytin auxiliary variables must not change the count or the core/dead features.
+
+    The constraint is wide enough for 'auto' to choose Tseytin (27 distributive clauses).
+    """
+    fm = _fm(_TSEYTIN_UVL)
+    assert ClauseSet.from_feature_model(fm, cnf_method='auto').auxiliary_variables
+    expected = (_exact_count(fm), _core_features(fm), _dead_features(fm))
+    for method in ('distributive', 'tseytin', 'auto'):
+        model = FmToSDD(fm, cnf_method=method).transform()
+        got = (SDDConfigurationsNumber().execute(model).get_result(),
+               set(SDDCoreFeatures().execute(model).get_result()),
+               set(SDDDeadFeatures().execute(model).get_result()))
+        assert got == expected, method
