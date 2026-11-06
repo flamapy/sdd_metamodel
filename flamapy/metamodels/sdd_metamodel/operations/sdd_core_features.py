@@ -25,7 +25,7 @@ class SDDCoreFeatures(CoreFeatures):
     def execute(self, model: VariabilityModel) -> 'SDDCoreFeatures':
         sdd_model = cast(SDDModel, model)
         manager = sdd_model.manager
-        core = []
+        core: list[Any] = []
         if sdd_model.root.is_false():  # void model
             self._result = core
             return self
