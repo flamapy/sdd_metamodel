@@ -1,7 +1,7 @@
 from pysdd.sdd import SddManager, Vtree
 
 from flamapy.core.transformations import ModelToModel
-from flamapy.metamodels.fm_metamodel.models import FeatureModel, ClauseSet
+from flamapy.metamodels.fm_metamodel.models import ClauseSet, DEFAULT_CNF_METHOD, FeatureModel
 from flamapy.metamodels.sdd_metamodel.models import SDDModel
 
 
@@ -20,7 +20,7 @@ class FmToSDD(ModelToModel):
     def get_destination_extension() -> str:
         return 'sdd'
 
-    def __init__(self, source_model: FeatureModel, cnf_method: str = 'auto') -> None:
+    def __init__(self, source_model: FeatureModel, cnf_method: str = DEFAULT_CNF_METHOD) -> None:
         self.source_model = source_model
         self.cnf_method = cnf_method
         self.destination_model = SDDModel()

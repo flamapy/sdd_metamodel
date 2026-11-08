@@ -10,6 +10,7 @@ from flamapy.core.models.language_level import LanguageLevel, MajorLevel, MinorL
 # per variable: 41 s for core and more than 3 minutes for dead on the dense 500-feature model.
 MANIFEST = PluginManifest(
     name='sdd',
+    calibration='2026-11-06',
     extension='sdd',
     supported_level=LanguageLevel(MajorLevel.BOOLEAN, {MinorLevel.GROUP_CARDINALITY}),
     max_features=2000,
