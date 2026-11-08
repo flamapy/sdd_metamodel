@@ -144,3 +144,23 @@ def test_cnf_methods_agree():
                set(SDDCoreFeatures().execute(model).get_result()),
                set(SDDDeadFeatures().execute(model).get_result()))
         assert got == expected, method
+
+
+# [1..2] over A, B, C (3 + 3 selections) times D optional: 12 configurations.
+_GROUP_UVL = """features
+    Root {abstract}
+        [1..2]
+            A
+            B
+            C
+        optional
+            D
+"""
+
+
+def test_group_cardinality():
+    fm = _fm(_GROUP_UVL)
+    model = FmToSDD(fm).transform()
+    assert SDDConfigurationsNumber().execute(model).get_result() == 12
+    assert set(SDDCoreFeatures().execute(model).get_result()) == _core_features(fm) == {'Root'}
+    assert set(SDDDeadFeatures().execute(model).get_result()) == _dead_features(fm) == set()
